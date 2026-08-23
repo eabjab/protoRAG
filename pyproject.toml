@@ -1,0 +1,111 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "protorag"
+version = "0.1.0"
+description = "Zero-infrastructure in-memory RAG prototyping framework for Python."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Ethan Buege", email = "buege.ethan@gmail.com" }]
+keywords = ["rag", "vector-search", "bm25", "embeddings", "prototyping", "llm", "agents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Minimal Core Dependencies (always installed)
+dependencies = [
+    "numpy>=1.23.0",
+    "pydantic>=2.0.0",
+    "fastembed>=0.3.0",
+    "usearch>=2.11.0",
+]
+
+[project.optional-dependencies]
+# Full GPU / PyTorch setup
+full = [
+    "torch>=2.0.0",
+    "sentence-transformers>=2.3.0",
+    "chromadb>=0.4.22",
+    "transformers>=4.36.0",
+]
+
+# Chroma vector store backend
+chroma = [
+    "chromadb>=0.4.22",
+]
+
+# Sentence-Transformers
+sentence-transformers = [
+    "torch>=2.0.0",
+    "sentence-transformers>=2.3.0",
+]
+
+# Development & Test dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "black>=23.7.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/protorag"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: tests that download a real embedding model (deselect with '-m \"not network\"')",
+]
+
+[tool.hatch.version]
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+ignore = [
+    # PEP 585 / PEP 604 annotation syntax (`dict[str, T]`, `X | None`) is
+    # rejected at runtime on Python 3.9, and pydantic evaluates field
+    # annotations at class creation. Keep typing.Dict/Optional for py3.9.
+    "UP006",
+    "UP007",
+    "UP035",
+    "UP045",
+]
+
+[tool.mypy]
+# mypy >= 2.x only targets Python 3.10+; runtime py3.9 compatibility is kept
+# via typing.Optional/Dict aliases (see [tool.ruff.lint] above).
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+# Optional, non-core third-party backends (untyped or not installed in a
+# minimal CPU environment).
+[[tool.mypy.overrides]]
+module = [
+    "torch",
+    "torch.*",
+    "transformers",
+    "sentence_transformers",
+    "smolagents",
+    "chromadb",
+    "chromadb.*",
+]
+ignore_missing_imports = true

@@ -1,0 +1,41 @@
+name: test-full
+
+# CI pipeline for the full installation (protorag[full]: PyTorch +
+# transformers + sentence-transformers + chromadb). Installs the CPU-only
+# torch wheel first to keep the dependency graph small on GitHub runners,
+# then runs the complete test suite including the network-gated tests
+# (real fastembed / BGE model download, cached between runs).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: full / py3.11 / ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Cache fastembed model weights
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/fastembed
+          key: fastembed-bge-small-en-v1.5-v1
+
+      - name: Install CPU-only torch first
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install full + dev extras
+        run: pip install ".[full,dev]"
+
+      - name: Test (full suite, incl. network)
+        run: pytest -q

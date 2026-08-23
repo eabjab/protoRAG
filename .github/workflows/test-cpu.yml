@@ -1,0 +1,42 @@
+name: test-cpu
+
+# CI pipeline for the CPU-only installation (protorag core + chroma extra).
+# Runs the full lint / type-check / offline-test matrix across supported
+# Python versions. Network-gated tests (real model downloads) are excluded
+# here; see test-full.yml for the full suite.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: py${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install core + chroma + dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[dev,chroma]"
+
+      - name: Lint (ruff)
+        run: ruff check src/protorag
+
+      - name: Type check (mypy --strict)
+        run: mypy --strict src/protorag
+
+      - name: Test (offline subset)
+        run: pytest -m "not network" -q
