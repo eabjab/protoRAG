@@ -1,7 +1,7 @@
-"""End-to-end search acceptance tests (SPEC-001 §4.2.1).
+"""End-to-end search acceptance tests.
 
 The offline twin runs on the deterministic hashing embedder (no network);
-the verbatim spec test runs on the real fastembed model and is marked
+the real-model test runs on the actual fastembed model and is marked
 ``network``.
 """
 
@@ -42,8 +42,8 @@ def test_end_to_end_offline_twin() -> None:
     assert bm25 and bm25[0].document_id == "doc1"
 
     # The offline embedder is character n-gram based, so the vector query
-    # shares n-grams with doc2's text; the verbatim spec query is covered by
-    # the network test below.
+    # shares n-grams with doc2's text; the semantic query that needs real
+    # embeddings is covered by the network test below.
     vector = rag.search("Python programming language", top_k=1, mode=SearchMode.VECTOR)
     assert vector and vector[0].document_id == "doc2"
 
@@ -85,7 +85,7 @@ def test_end_to_end_replacing_document(make_rag: Any) -> None:
 
 @pytest.mark.network
 def test_end_to_end_verbatim_spec(real_embedder: Any) -> None:
-    """SPEC-001 §4.2.1 verbatim: real fastembed model, numpy backend."""
+    """All three search modes with the real fastembed model (numpy backend)."""
     rag = ProtoRAG(vector_backend="numpy", embedding_backend="fastembed")
     rag.add_documents(list(SAMPLE_DOCS))
 

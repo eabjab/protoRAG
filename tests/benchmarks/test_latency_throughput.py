@@ -1,4 +1,4 @@
-"""Latency / throughput benchmarks (SPEC-001 §4.1): 1000 chunks of 500 chars.
+"""Latency / throughput benchmarks: 1000 chunks of 500 chars.
 
 Targets (mean latency, CPU): vector < 5 ms, BM25 < 2 ms, hybrid < 8 ms.
 """
@@ -17,7 +17,7 @@ CHUNK_CHARS = 500
 TOP_K = 10
 QUERY = "topic 5 supporting details number 12"
 
-# Mean latency budgets in milliseconds (SPEC-001 §4.1).
+# Mean latency budgets in milliseconds.
 VECTOR_BUDGET_MS = 5.0
 BM25_BUDGET_MS = 2.0
 HYBRID_BUDGET_MS = 8.0

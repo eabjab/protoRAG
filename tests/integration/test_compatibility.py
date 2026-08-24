@@ -1,4 +1,4 @@
-"""Load-time compatibility and error-handling tests (SPEC-001 §4.1)."""
+"""Load-time compatibility and error-handling tests."""
 
 from __future__ import annotations
 

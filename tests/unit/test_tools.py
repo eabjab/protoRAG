@@ -1,4 +1,4 @@
-"""Unit tests for the agent tool wrapper (SPEC-001 §2.6, §4.1)."""
+"""Unit tests for the agent tool wrapper."""
 
 from __future__ import annotations
 

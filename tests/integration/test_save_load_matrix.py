@@ -1,9 +1,8 @@
-"""Save/load round-trip matrix: every vector backend x embedding strategy
-(SPEC-001 §4.1, §4.2.2).
+"""Save/load round-trip matrix: every vector backend x embedding strategy.
 
 Offline twins load with a deterministic ``override_embedder`` and assert
-top-k ID identity with score delta < 1e-5. The verbatim spec test uses the
-real fastembed model (``network``).
+top-k ID identity with score delta < 1e-5. The real-model test uses the
+actual fastembed model (``network``).
 """
 
 from __future__ import annotations
@@ -75,7 +74,7 @@ def test_save_load_offline_twin(tmp_path: Any, vector_backend: str) -> None:
 @pytest.mark.parametrize("vector_backend", BACKENDS)
 @pytest.mark.network
 def test_save_load_verbatim_spec(tmp_path: Any, vector_backend: str, real_embedder: Any) -> None:
-    """SPEC-001 §4.2.2 verbatim: real fastembed embeddings."""
+    """Save/load round-trip with the real fastembed model."""
     rag = ProtoRAG(vector_backend=vector_backend, embedding_backend="fastembed")
     rag.add_texts(texts=TEXTS, metadatas=METADATAS)
     rag.save(str(tmp_path / "index"))

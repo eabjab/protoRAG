@@ -1,5 +1,5 @@
 """Unit tests for the BM25 lexical engine, cross-checked against an
-independent pure-Python Okapi BM25 reference (SPEC-001 §2.4, §4.1)."""
+independent pure-Python Okapi BM25 reference."""
 
 from __future__ import annotations
 

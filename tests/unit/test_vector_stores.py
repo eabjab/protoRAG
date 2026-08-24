@@ -1,4 +1,4 @@
-"""Unit tests for all vector store backends (SPEC-001 §2.3, §4.1)."""
+"""Unit tests for all vector store backends."""
 
 from __future__ import annotations
 

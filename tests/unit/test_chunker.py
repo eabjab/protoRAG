@@ -1,4 +1,4 @@
-"""Unit tests for the chunking strategies (SPEC-001 §2, §4.1)."""
+"""Unit tests for the chunking strategies."""
 
 from __future__ import annotations
 

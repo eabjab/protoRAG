@@ -156,7 +156,7 @@ missing optional dependencies surface as `ImportError` (converted to
 - optionally a smolagents `Tool` subclass via `to_hf_tool()` when
   `smolagents` is importable; otherwise the plain callable is returned.
 
-## Performance targets (SPEC-001 §4)
+## Performance targets
 
 Benchmark corpus: 1,000 chunks of ~500 characters. Single-query latency
 budgets: **vector < 5 ms, BM25 < 2 ms, hybrid < 8 ms**. Measured on a

@@ -13,7 +13,7 @@ agent tooling — all in-process, with no external service.
 | [Getting started](getting-started.md) | Installation, quickstart, hybrid search, persistence, tool integration |
 | [Architecture](architecture.md) | Component map, score conventions, fusion formulas, serialization layout, compatibility rules |
 
-## Design goals (SPEC-001)
+## Design goals
 
 - **Zero infrastructure** — everything runs in a single Python process; no
   database server, broker, or compiled extension is required.

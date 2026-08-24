@@ -1,4 +1,4 @@
-"""Hugging Face / agent tool integration (SPEC-001 §4.2.3)."""
+"""Hugging Face / agent tool integration."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def _assert_schema(tool: Any) -> None:
 
 @pytest.mark.network
 def test_hf_tool_verbatim_spec(real_embedder: Any) -> None:
-    """SPEC-001 §4.2.3 verbatim: real fastembed embeddings."""
+    """Agent tool schema and query with the real fastembed model."""
     rag = ProtoRAG(vector_backend="numpy", embedding_backend="fastembed")
     rag.add_texts([DENVER])
     tool = rag.to_tool(name="colorado_kb", description="Knowledge base about Colorado facts.")

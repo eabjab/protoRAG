@@ -1,4 +1,4 @@
-"""Unit tests for the embedding layer (SPEC-001 §2.2, §4.1)."""
+"""Unit tests for the embedding layer."""
 
 from __future__ import annotations
 

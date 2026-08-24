@@ -1,4 +1,4 @@
-"""Unit tests for hybrid fusion and score normalization (SPEC-001 §2.5, §4.1)."""
+"""Unit tests for hybrid fusion and score normalization."""
 
 from __future__ import annotations
 

@@ -22,7 +22,8 @@ from protorag.lexical.tokenizer import tokenize
 from protorag.serialization.serializer import read_json, write_json_atomic
 
 #: Per-term postings as (document indices, term frequencies) int64 arrays so
-#: query-time scoring is vectorized (SPEC-001 §4.1 BM25 latency budget).
+#: query-time scoring is vectorized, keeping BM25 search within its 2 ms
+#: mean latency budget (see tests/benchmarks/test_latency_throughput.py).
 PostingArrays = Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any]]
 
 
