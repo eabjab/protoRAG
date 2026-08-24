@@ -10,7 +10,7 @@ score* where **higher is better**:
 
 from __future__ import annotations
 
-from typing import List, Protocol, Sequence, Tuple, runtime_checkable
+from typing import Any, List, Protocol, Sequence, Tuple, runtime_checkable
 
 import numpy as np
 
@@ -30,11 +30,11 @@ class BaseVectorStore(Protocol):
         """Initializes index data structures with the given dimensionality and metric."""
         ...
 
-    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray) -> None:
+    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray[Any, Any]) -> None:
         """Inserts vectors corresponding to ``chunk_ids`` into the index."""
         ...
 
-    def search(self, query_vector: np.ndarray, top_k: int = 10) -> List[Tuple[str, float]]:
+    def search(self, query_vector: np.ndarray[Any, Any], top_k: int = 10) -> List[Tuple[str, float]]:
         """Returns up to ``top_k`` ``(chunk_id, similarity_score)`` pairs, best first."""
         ...
 

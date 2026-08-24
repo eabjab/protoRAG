@@ -53,7 +53,7 @@ class Chunk:
     document_id: str
     content: str
     metadata: Dict[str, Any] = field(default_factory=dict)
-    embedding: Optional[np.ndarray] = None
+    embedding: Optional[np.ndarray[Any, Any]] = None
 
 
 @dataclass(frozen=True)

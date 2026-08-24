@@ -74,7 +74,7 @@ class SentenceTransformersEmbedder:
         out.update(self._kwargs)
         return out
 
-    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray:
+    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray[Any, Any]:
         batched = list(texts)
         if not batched:
             return np.zeros((0, self._dimension), dtype=np.float32)
@@ -90,5 +90,5 @@ class SentenceTransformersEmbedder:
             raise EmbeddingError(f"sentence-transformers encoding failed: {err}") from err
         return l2_normalize(np.asarray(vectors, dtype=np.float32))
 
-    def embed_query(self, text: str) -> np.ndarray:
-        return cast("np.ndarray", self.embed_documents([text], 32)[0])
+    def embed_query(self, text: str) -> np.ndarray[Any, Any]:
+        return cast("np.ndarray[Any, Any]", self.embed_documents([text], 32)[0])

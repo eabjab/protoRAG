@@ -96,7 +96,7 @@ class ChromaVectorStore:
             return -distance
         return 1.0 / (1.0 + distance)
 
-    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray) -> None:
+    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray[Any, Any]) -> None:
         collection = self._require_initialized()
         matrix = np.ascontiguousarray(vectors, dtype=np.float32)
         if matrix.ndim == 1:
@@ -124,7 +124,7 @@ class ChromaVectorStore:
         except Exception as err:
             raise VectorStoreError(f"chroma upsert failed: {err}") from err
 
-    def search(self, query_vector: np.ndarray, top_k: int = 10) -> List[Tuple[str, float]]:
+    def search(self, query_vector: np.ndarray[Any, Any], top_k: int = 10) -> List[Tuple[str, float]]:
         collection = self._require_initialized()
         if top_k <= 0 or collection.count() == 0:
             return []

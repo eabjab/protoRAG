@@ -92,7 +92,7 @@ class UsearchVectorStore:
             )
         return self._index
 
-    def _check_query(self, query_vector: np.ndarray) -> np.ndarray:
+    def _check_query(self, query_vector: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         query = np.ascontiguousarray(query_vector, dtype=np.float32).reshape(-1)
         if self._dimension is not None and query.shape[0] != self._dimension:
             raise VectorStoreError(
@@ -107,7 +107,7 @@ class UsearchVectorStore:
             return -distance
         return 1.0 / (1.0 + distance)
 
-    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray) -> None:
+    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray[Any, Any]) -> None:
         index = self._require_initialized()
         matrix = np.ascontiguousarray(vectors, dtype=np.float32)
         if matrix.ndim == 1:
@@ -126,7 +126,7 @@ class UsearchVectorStore:
         if not ids:
             return
         to_add_ids: List[str] = []
-        to_add_vectors: List[np.ndarray] = []
+        to_add_vectors: List[np.ndarray[Any, Any]] = []
         for offset, chunk_id in enumerate(ids):
             existing_key = self._id_to_key.get(chunk_id)
             if existing_key is not None:  # upsert: drop the previous vector first
@@ -149,7 +149,7 @@ class UsearchVectorStore:
             self._key_to_id[int(key)] = chunk_id
         self._next_key += len(to_add_ids)
 
-    def search(self, query_vector: np.ndarray, top_k: int = 10) -> List[Tuple[str, float]]:
+    def search(self, query_vector: np.ndarray[Any, Any], top_k: int = 10) -> List[Tuple[str, float]]:
         index = self._require_initialized()
         if top_k <= 0 or len(index) == 0:
             return []

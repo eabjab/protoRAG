@@ -133,12 +133,12 @@ class TorchCustomEmbedder:
             out.update(self._kwargs)
         return out
 
-    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray:
+    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray[Any, Any]:
         batched = list(texts)
         if not batched:
             return np.zeros((0, self._dimension), dtype=np.float32)
         torch = self._torch
-        outputs: List[np.ndarray] = []
+        outputs: List[np.ndarray[Any, Any]] = []
         with torch.no_grad():
             for start in range(0, len(batched), batch_size):
                 batch = batched[start : start + batch_size]
@@ -161,5 +161,5 @@ class TorchCustomEmbedder:
         stacked = np.stack(outputs).astype(np.float32, copy=False)
         return l2_normalize(stacked) if self._normalize else stacked
 
-    def embed_query(self, text: str) -> np.ndarray:
-        return cast("np.ndarray", self.embed_documents([text], 32)[0])
+    def embed_query(self, text: str) -> np.ndarray[Any, Any]:
+        return cast("np.ndarray[Any, Any]", self.embed_documents([text], 32)[0])

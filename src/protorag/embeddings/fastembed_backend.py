@@ -90,15 +90,15 @@ class FastEmbedEmbedder:
         out.update(self._kwargs)
         return out
 
-    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray:
+    def embed_documents(self, texts: Sequence[str], batch_size: int = 32) -> np.ndarray[Any, Any]:
         return self._embed(list(texts), batch_size)
 
-    def embed_query(self, text: str) -> np.ndarray:
+    def embed_query(self, text: str) -> np.ndarray[Any, Any]:
         # BGE models are asymmetric: queries expect the canonical BGE prefix.
         query = BGE_QUERY_PREFIX + text if self._is_bge else text
-        return cast("np.ndarray", self._embed([query], 32)[0])
+        return cast("np.ndarray[Any, Any]", self._embed([query], 32)[0])
 
-    def _embed(self, texts: List[str], batch_size: int) -> np.ndarray:
+    def _embed(self, texts: List[str], batch_size: int) -> np.ndarray[Any, Any]:
         if not texts:
             return np.zeros((0, self._dimension), dtype=np.float32)
         try:

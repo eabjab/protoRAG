@@ -34,7 +34,7 @@ class NumpyVectorStore:
         self._metric: DistanceMetric = DistanceMetric.COSINE
         self._ids: List[str] = []
         self._id_to_row: Dict[str, int] = {}
-        self._vectors: Optional[np.ndarray] = None
+        self._vectors: Optional[np.ndarray[Any, Any]] = None
 
     @property
     def backend(self) -> str:
@@ -58,7 +58,7 @@ class NumpyVectorStore:
                 "NumpyVectorStore is not initialized; call initialize() first."
             )
 
-    def _as_matrix(self, vectors: np.ndarray) -> np.ndarray:
+    def _as_matrix(self, vectors: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         matrix = np.ascontiguousarray(vectors, dtype=np.float32)
         if matrix.ndim == 1:
             matrix = matrix.reshape(1, -1)
@@ -70,7 +70,7 @@ class NumpyVectorStore:
             )
         return matrix
 
-    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray) -> None:
+    def add(self, chunk_ids: Sequence[str], vectors: np.ndarray[Any, Any]) -> None:
         self._require_initialized()
         matrix = self._as_matrix(vectors)
         ids = list(chunk_ids)
@@ -92,7 +92,7 @@ class NumpyVectorStore:
             self._ids.append(chunk_id)
             self._id_to_row[chunk_id] = len(self._ids) - 1
 
-    def search(self, query_vector: np.ndarray, top_k: int = 10) -> List[Tuple[str, float]]:
+    def search(self, query_vector: np.ndarray[Any, Any], top_k: int = 10) -> List[Tuple[str, float]]:
         self._require_initialized()
         if top_k <= 0 or not self._ids:
             return []
