@@ -26,10 +26,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-[project.urls]
-Homepage = "https://github.com/eabjab/protoRAG"
-Issues = "https://github.com/eabjab/protoRAG/issues"
-
 # Minimal Core Dependencies (always installed)
 dependencies = [
     "numpy>=1.23.0",
@@ -67,6 +63,10 @@ dev = [
     "ruff>=0.1.0",
     "black>=23.7.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/eabjab/protoRAG"
+Issues = "https://github.com/eabjab/protoRAG/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/protorag"]
