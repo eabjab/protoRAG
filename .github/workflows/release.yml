@@ -11,7 +11,7 @@ on:
     tags: ["v*"]
 
 jobs:
-  publish:
+  pypi-publish:
     name: build + publish
     runs-on: ubuntu-latest
     environment:
