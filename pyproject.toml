@@ -5,11 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "protorag"
 version = "0.1.0"
+authors = [{ name = "Ethan Buege", email = "buege.ethan@gmail.com" }]
 description = "Zero-infrastructure in-memory RAG prototyping framework for Python."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "Apache-2.0" }
-authors = [{ name = "Ethan Buege", email = "buege.ethan@gmail.com" }]
+license = "Apache-2.0"
+license-files = ["LICEN[CS]E*"]
 keywords = ["rag", "vector-search", "bm25", "embeddings", "prototyping", "llm", "agents"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,6 +25,10 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+
+[project.urls]
+Homepage = "https://github.com/eabjab/protoRAG"
+Issues = "https://github.com/eabjab/protoRAG/issues"
 
 # Minimal Core Dependencies (always installed)
 dependencies = [
