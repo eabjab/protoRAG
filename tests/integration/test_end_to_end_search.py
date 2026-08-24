@@ -84,7 +84,7 @@ def test_end_to_end_replacing_document(make_rag: Any) -> None:
 
 
 @pytest.mark.network
-def test_end_to_end_verbatim_spec(real_embedder: Any) -> None:
+def test_end_to_end_real_fastembed_model(real_embedder: Any) -> None:
     """All three search modes with the real fastembed model (numpy backend)."""
     rag = ProtoRAG(vector_backend="numpy", embedding_backend="fastembed")
     rag.add_documents(list(SAMPLE_DOCS))

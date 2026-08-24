@@ -73,7 +73,9 @@ def test_save_load_offline_twin(tmp_path: Any, vector_backend: str) -> None:
 
 @pytest.mark.parametrize("vector_backend", BACKENDS)
 @pytest.mark.network
-def test_save_load_verbatim_spec(tmp_path: Any, vector_backend: str, real_embedder: Any) -> None:
+def test_save_load_real_fastembed_model(
+    tmp_path: Any, vector_backend: str, real_embedder: Any
+) -> None:
     """Save/load round-trip with the real fastembed model."""
     rag = ProtoRAG(vector_backend=vector_backend, embedding_backend="fastembed")
     rag.add_texts(texts=TEXTS, metadatas=METADATAS)

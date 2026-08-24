@@ -25,7 +25,7 @@ def _assert_schema(tool: Any) -> None:
 
 
 @pytest.mark.network
-def test_hf_tool_verbatim_spec(real_embedder: Any) -> None:
+def test_hf_tool_real_fastembed_model(real_embedder: Any) -> None:
     """Agent tool schema and query with the real fastembed model."""
     rag = ProtoRAG(vector_backend="numpy", embedding_backend="fastembed")
     rag.add_texts([DENVER])
