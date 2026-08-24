@@ -156,12 +156,24 @@ missing optional dependencies surface as `ImportError` (converted to
 - optionally a smolagents `Tool` subclass via `to_hf_tool()` when
   `smolagents` is importable; otherwise the plain callable is returned.
 
-## Performance targets
+## Performance benchmarks
 
-Benchmark corpus: 1,000 chunks of ~500 characters. Single-query latency
-budgets: **vector < 5 ms, BM25 < 2 ms, hybrid < 8 ms**. Measured on a
-modern laptop CPU (usearch, 384-dim BGE-small, 500-char chunks): vector
-≈ 0.1 ms, BM25 ≈ 0.6 ms, hybrid ≈ 0.7 ms.
+Benchmark corpus: 1,000 chunks of ~500 characters. Measured on standard
+GitHub hosted runner `ubuntu-latest` (4 vCPU, 16GB RAM):
+
+```
+------------------------------------------------------------------------------------------- benchmark: 3 tests ------------------------------------------------------------------------------------------
+Name (time in us)                   Min                 Max                Mean             StdDev              Median                IQR            Outliers        OPS (Kops/s)      Rounds  Iterations
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_bm25_search_latency       122.6180 (1.0)      225.5660 (1.0)      132.5839 (1.0)       5.4485 (1.0)      130.7270 (1.0)       3.3748 (1.0)       375;342        7.5424 (1.0)        2579           1
+test_vector_search_latency     199.0500 (1.62)     314.0570 (1.39)     213.3713 (1.61)      8.5510 (1.57)     210.7650 (1.61)      7.9330 (2.35)       176;34        4.6867 (0.62)       1070           1
+test_hybrid_search_latency     319.1870 (2.60)     512.6320 (2.27)     349.3934 (2.64)     12.6563 (2.32)     346.9390 (2.65)     14.0440 (4.16)       156;28        2.8621 (0.38)       1515           1
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Legend:
+  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
+  OPS: Operations Per Second, computed as 1 / Mean
+```
 
 ## Error taxonomy
 
