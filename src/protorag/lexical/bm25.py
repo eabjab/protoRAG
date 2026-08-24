@@ -15,11 +15,15 @@ import os
 from collections import Counter
 from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Tuple
 
+import numpy as np
+
 from protorag.core.exceptions import LexicalError
 from protorag.lexical.tokenizer import tokenize
 from protorag.serialization.serializer import read_json, write_json_atomic
 
-Posting = Tuple[int, int]  # (doc_index, term_frequency)
+#: Per-term postings as (document indices, term frequencies) int64 arrays so
+#: query-time scoring is vectorized (SPEC-001 §4.1 BM25 latency budget).
+PostingArrays = Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any]]
 
 
 class BM25Engine:
@@ -44,8 +48,8 @@ class BM25Engine:
         )
         self._doc_ids: List[str] = []
         self._doc_id_to_idx: Dict[str, int] = {}
-        self._doc_lengths: List[int] = []
-        self._inverted: Dict[str, List[Posting]] = {}
+        self._doc_lengths: np.ndarray[Any, Any] = np.zeros(0, dtype=np.int64)
+        self._inverted: Dict[str, PostingArrays] = {}
         self._idf_cache: Dict[str, float] = {}
 
     # ------------------------------------------------------------------ #
@@ -67,6 +71,8 @@ class BM25Engine:
                 f"chunk_ids ({len(chunk_ids)}) and texts ({len(texts)}) length mismatch."
             )
         base = len(self._doc_ids)
+        new_lengths: List[int] = []
+        new_postings: Dict[str, List[Tuple[int, int]]] = {}
         for i, (chunk_id, text) in enumerate(zip(chunk_ids, texts)):
             if chunk_id in self._doc_id_to_idx:
                 raise LexicalError(f"Duplicate chunk id {chunk_id!r}.")
@@ -74,9 +80,24 @@ class BM25Engine:
             doc_idx = base + i
             self._doc_ids.append(chunk_id)
             self._doc_id_to_idx[chunk_id] = doc_idx
-            self._doc_lengths.append(len(tokens))
+            new_lengths.append(len(tokens))
             for term, freq in Counter(tokens).items():
-                self._inverted.setdefault(term, []).append((doc_idx, freq))
+                new_postings.setdefault(term, []).append((doc_idx, freq))
+        if new_lengths:
+            self._doc_lengths = np.concatenate(
+                [self._doc_lengths, np.asarray(new_lengths, dtype=np.int64)]
+            )
+        for term, posting in new_postings.items():
+            pairs = np.asarray(posting, dtype=np.int64)
+            arrays: PostingArrays = (pairs[:, 0].copy(), pairs[:, 1].copy())
+            existing = self._inverted.get(term)
+            if existing is None:
+                self._inverted[term] = arrays
+            else:
+                self._inverted[term] = (
+                    np.concatenate([existing[0], arrays[0]]),
+                    np.concatenate([existing[1], arrays[1]]),
+                )
         self._idf_cache.clear()
 
     def delete(self, chunk_ids: Sequence[str]) -> None:
@@ -84,22 +105,21 @@ class BM25Engine:
         to_remove = {cid for cid in chunk_ids if cid in self._doc_id_to_idx}
         if not to_remove:
             return
-        new_ids: List[str] = []
-        new_lengths: List[int] = []
-        new_inverted: Dict[str, List[Posting]] = {}
-        for doc_idx, chunk_id in enumerate(self._doc_ids):
-            if chunk_id in to_remove:
+        keep_mask = np.fromiter(
+            (cid not in to_remove for cid in self._doc_ids),
+            dtype=np.bool_,
+            count=len(self._doc_ids),
+        )
+        new_index = np.cumsum(keep_mask, dtype=np.int64) - 1
+        new_inverted: Dict[str, PostingArrays] = {}
+        for term, (idxs, freqs) in self._inverted.items():
+            keep = keep_mask[idxs]
+            if not keep.any():
                 continue
-            new_idx = len(new_ids)
-            new_ids.append(chunk_id)
-            new_lengths.append(self._doc_lengths[doc_idx])
-            for term, posting in self._inverted.items():
-                for stored_idx, freq in posting:
-                    if stored_idx == doc_idx:
-                        new_inverted.setdefault(term, []).append((new_idx, freq))
-        self._doc_ids = new_ids
-        self._doc_id_to_idx = {cid: i for i, cid in enumerate(new_ids)}
-        self._doc_lengths = new_lengths
+            new_inverted[term] = (new_index[idxs[keep]], freqs[keep])
+        self._doc_ids = [cid for cid in self._doc_ids if cid not in to_remove]
+        self._doc_id_to_idx = {cid: i for i, cid in enumerate(self._doc_ids)}
+        self._doc_lengths = self._doc_lengths[keep_mask]
         self._inverted = new_inverted
         self._idf_cache.clear()
 
@@ -107,7 +127,7 @@ class BM25Engine:
         """Flushes the entire inverted index."""
         self._doc_ids = []
         self._doc_id_to_idx = {}
-        self._doc_lengths = []
+        self._doc_lengths = np.zeros(0, dtype=np.int64)
         self._inverted = {}
         self._idf_cache = {}
 
@@ -120,7 +140,8 @@ class BM25Engine:
         if cached is not None:
             return cached
         n_docs = len(self._doc_ids)
-        doc_freq = len(self._inverted.get(term, ()))
+        posting = self._inverted.get(term)
+        doc_freq = 0 if posting is None else posting[0].shape[0]
         if n_docs == 0 or doc_freq == 0:
             value = 0.0
         else:
@@ -132,7 +153,7 @@ class BM25Engine:
         count = len(self._doc_lengths)
         if count == 0:
             return 0.0
-        return sum(self._doc_lengths) / count
+        return float(self._doc_lengths.sum()) / count
 
     def search(self, query: str, top_k: int = 10) -> List[Tuple[str, float]]:
         """Ranks indexed chunks against ``query``.
@@ -149,20 +170,22 @@ class BM25Engine:
         if not query_terms:
             return []
         avgdl = self._avg_doc_length()
-        scores: Dict[int, float] = {}
-        for term in query_terms:
+        doc_lens = self._doc_lengths
+        scores = np.zeros(len(self._doc_ids), dtype=np.float64)
+        for term in sorted(query_terms):
             posting = self._inverted.get(term)
-            if not posting:
+            if posting is None:
                 continue
+            idxs, freqs = posting
             idf = self._idf(term)
-            for doc_idx, freq in posting:
-                doc_len = self._doc_lengths[doc_idx]
-                denominator = freq + self.k1 * (1.0 - self.b + self.b * (doc_len / avgdl))
-                scores[doc_idx] = scores.get(doc_idx, 0.0) + idf * (freq * (self.k1 + 1)) / denominator
-        if not scores:
+            denominator = freqs + self.k1 * (1.0 - self.b + self.b * (doc_lens[idxs] / avgdl))
+            scores[idxs] += idf * (freqs * (self.k1 + 1)) / denominator
+        matched = np.flatnonzero(scores)
+        if matched.size == 0:
             return []
-        ranked = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
-        return [(self._doc_ids[doc_idx], float(score)) for doc_idx, score in ranked[:top_k]]
+        order = np.lexsort((matched, -scores[matched]))
+        top = matched[order[:top_k]]
+        return [(self._doc_ids[int(doc_idx)], float(scores[doc_idx])) for doc_idx in top]
 
     # ------------------------------------------------------------------ #
     # Persistence
@@ -176,8 +199,11 @@ class BM25Engine:
             "lowercase": self.lowercase,
             "stopwords": sorted(self._stopwords),
             "doc_ids": self._doc_ids,
-            "doc_lengths": self._doc_lengths,
-            "inverted": {term: [[idx, tf] for idx, tf in posting] for term, posting in self._inverted.items()},
+            "doc_lengths": self._doc_lengths.tolist(),
+            "inverted": {
+                term: np.stack((idxs, freqs), axis=1).tolist()
+                for term, (idxs, freqs) in self._inverted.items()
+            },
             "idf_cache": self._idf_cache,
         }
         write_json_atomic(path, payload)
@@ -196,12 +222,18 @@ class BM25Engine:
             self.lowercase = bool(payload["lowercase"])
             self._stopwords = frozenset(payload.get("stopwords", ()))
             self._doc_ids = list(payload["doc_ids"])
-            self._doc_lengths = [int(length) for length in payload["doc_lengths"]]
-            self._inverted = {
-                term: [(int(idx), int(tf)) for idx, tf in posting]
-                for term, posting in payload["inverted"].items()
-            }
-            self._idf_cache = {term: float(value) for term, value in payload.get("idf_cache", {}).items()}
+            self._doc_lengths = np.asarray(
+                [int(length) for length in payload["doc_lengths"]], dtype=np.int64
+            )
+            inverted: Dict[str, PostingArrays] = {}
+            for term, posting in payload["inverted"].items():
+                pairs = np.asarray(posting, dtype=np.int64)
+                if pairs.ndim != 2 or pairs.shape[1] != 2:
+                    raise ValueError(f"malformed posting list for term {term!r}")
+                inverted[term] = (pairs[:, 0].copy(), pairs[:, 1].copy())
+            self._inverted = inverted
+            idf_cache = payload.get("idf_cache", {})
+            self._idf_cache = {term: float(value) for term, value in idf_cache.items()}
         except (KeyError, TypeError, ValueError) as err:
             raise LexicalError(f"Malformed BM25 index file {path!r}: {err}") from err
         if len(self._doc_ids) != len(self._doc_lengths):
