@@ -5,24 +5,24 @@ retrieval subsystems behind strict `typing.Protocol` interfaces, so every
 backend is swappable and every layer testable in isolation:
 
 ```
-                         ┌─────────────────────────────────────────────┐
-                         │                 ProtoRAG                    │
-                         │  (core/engine.py — ingestion + retrieval)   │
-                         └──┬──────────────┬───────────────┬───────────┘
-        ingestion           │              │               │
-   ┌──────────────┐   ┌─────▼─────┐  ┌─────▼─────┐  ┌──────▼──────────┐
-   │  chunkers    │   │ embeddings│  │  lexical  │  │    storage      │
-   │ BaseChunker  │   │ BaseEmbedder       │  BM25Engine│  BaseVectorStore │
-   │  Recursive…  │   │  fastembed │  (Okapi,     │   numpy / usearch /
-   │  Simple…     │   │  torch     │   inverted   │    chromadb
-   │  (custom)    │   │  sentence- │   index)     │                       │
-   └──────────────┘   │  transform.│  └─────┬─────┘  └───────────────────┘
-                      └────────────┘        │
-                                 ┌──────────▼──────────┐
-                                 │       hybrid        │
-                                 │  normalizers + fuse │
-                                 │  (RRF / linear)     │
-                                 └─────────────────────┘
+                         ┌──────────────────────────────────────────────┐
+                         │                  ProtoRAG                    │
+                         │   (core/engine.py — ingestion + retrieval)   │
+                         └────┬────────────────┬──────────────────┬─────┘
+      ingestion               │                │                  │
+   ┌──────────────┐   ┌───────▼───────┐  ┌─────▼──────┐  ┌────────▼────────┐
+   │   chunkers   │   │  embeddings   │  │  lexical   │  │     storage     │
+   │ BaseChunker  │   │ BaseEmbedder  │  │ BM25Engine │  │ BaseVectorStore │
+   │  Recursive…  │   │  fastembed    │  │  (Okapi,   │  │  numpy /        │
+   │  Simple…     │   │  torch        │  │  inverted  │  │  usearch /      │
+   │  (custom)    │   │  sentence-    │  │  index)    │  │  chromadb       │
+   └──────────────┘   │  transformers │  └─────┬──────┘  └─────────────────┘
+                      └───────────────┘        │
+                                    ┌──────────▼──────────┐
+                                    │       hybrid        │
+                                    │  normalizers + fuse │
+                                    │  (RRF / linear)     │
+                                    └─────────────────────┘
         cross-cutting:  serialization/ (manifest, save/load) · tools/ (ProtoRAGTool)
 ```
 
