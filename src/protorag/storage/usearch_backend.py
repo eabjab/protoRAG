@@ -141,7 +141,15 @@ class UsearchVectorStore:
             count=len(to_add_ids),
         )
         try:
-            index.add_many(keys, np.ascontiguousarray(np.stack(to_add_vectors), dtype=np.float32))
+            # threads=1: parallel HNSW insertion produces a run-dependent
+            # graph (measured: different edge sets per build on the same
+            # machine), which can leave nodes unreachable and destabilize
+            # top-1 recall. Sequential insertion is deterministic.
+            index.add_many(
+                keys,
+                np.ascontiguousarray(np.stack(to_add_vectors), dtype=np.float32),
+                threads=1,
+            )
         except Exception as err:
             raise VectorStoreError(f"usearch add failed: {err}") from err
         for key, chunk_id in zip(keys.tolist(), to_add_ids):
