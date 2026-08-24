@@ -10,7 +10,6 @@ from protorag.embeddings.base import l2_normalize
 from protorag.embeddings.fastembed_backend import FastEmbedEmbedder
 from tests.conftest import NGramHashingEmbedder
 
-
 # --------------------------------------------------------------------------- #
 # l2_normalize
 # --------------------------------------------------------------------------- #
