@@ -78,11 +78,12 @@ def sample_documents() -> List[Document]:
 @pytest.fixture(scope="session")
 def real_embedder():
     """Real fastembed model; skips the dependent test when unavailable."""
+    from protorag.core.exceptions import EmbeddingError
     from protorag.embeddings.fastembed_backend import FastEmbedEmbedder
 
     try:
         return FastEmbedEmbedder()
-    except Exception as err:  # pragma: no cover - network/model availability
+    except EmbeddingError as err:  # pragma: no cover - network/model availability
         pytest.skip(f"fastembed model unavailable (network/model download required): {err}")
 
 
