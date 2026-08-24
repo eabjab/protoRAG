@@ -97,11 +97,11 @@ def make_rag():
         dimension: int = 64,
         **kwargs: Any,
     ) -> Any:
-        params: Dict[str, Any] = dict(
-            vector_backend=vector_backend,
-            embedding_backend="fastembed",
-            embedder_instance=NGramHashingEmbedder(dimension=dimension),
-        )
+        params: Dict[str, Any] = {
+            "vector_backend": vector_backend,
+            "embedding_backend": "fastembed",
+            "embedder_instance": NGramHashingEmbedder(dimension=dimension),
+        }
         params.update(kwargs)
         return ProtoRAG(**params)
 
