@@ -89,9 +89,12 @@ ignore = [
 ]
 
 [tool.mypy]
-# mypy >= 2.x only targets Python 3.10+; runtime py3.9 compatibility is kept
-# via typing.Optional/Dict aliases (see [tool.ruff.lint] above).
-python_version = "3.10"
+# Target 3.12 rather than the 3.9 runtime minimum: numpy >= 2.5 ships PEP 695
+# `type` statements in its type stubs, which mypy rejects with a [syntax]
+# error (aborting the entire run) when the target is below 3.12. Runtime
+# py3.9 compatibility is kept via typing.Optional/Dict aliases (see
+# [tool.ruff.lint] above) and enforced by the CI test matrix.
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
